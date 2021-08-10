@@ -9,7 +9,7 @@ use Readonly;
 
 extends qw(npg_qc::autoqc::checks::check);
 with 'npg_tracking::data::bait::find',
-    'npg_common::roles::software_location' => { tools => ['gatk']}
+    'npg_common::roles::software_location' => {tools => ['gatk']}
 ;
 
 our $VERSION = '0';
@@ -39,6 +39,16 @@ Readonly::Hash   my %PICARD_METRICS_FIELDS_MAPPING => {
 
 has '+file_type'         => (default => 'cram',);
 has '+aligner'           => (default => 'fasta',);
+
+has 'alignments_in_bam'  => (
+	  is => 'ro',
+	  isa => 'Maybe[Bool]',
+	  lazy_build => 1,
+);
+sub _build_alignments_in_bam {
+    my ($self) = @_;
+    return $self->lims->alignments_in_bam;
+}
 
 has 'max_java_heap_size' => (
     is      => 'ro',
@@ -103,7 +113,7 @@ override 'can_run' => sub {
 
         return 0;
     }
-    if(!$self->lims->alignments_in_bam) {
+    if(!$self->alignments_in_bam) {
         $self->messages->push('alignments_in_bam is false');
         return 0;
     }
@@ -131,7 +141,7 @@ override 'execute' => sub {
         return 1;
     }
 
-    $self->result->set_info( 'Aligner', qq[Picard $PICARD_MODULE] );
+    $self->result->set_info( 'Aligner', 'Picard '.$self->picard_module );
     $self->result->set_info( 'Aligner_version', $self->current_version($self->gatk_cmd) );
     $self->result->bait_path($self->bait_path);
 
@@ -222,7 +232,7 @@ sub _interval_files_identical {
 
     my $cmd = q[diff -q ] . $self->bait_intervals_path . q[ ] . $self->target_intervals_path . q[ 2>&1 > /dev/null];
 
-carp q[Comparing intervals files with cmd: ], $cmd;
+    carp q[Comparing intervals files with cmd: ], $cmd;
 
     if($self->bait_intervals_path and $self->target_intervals_path and system($cmd) == 0) {
         return 1;
