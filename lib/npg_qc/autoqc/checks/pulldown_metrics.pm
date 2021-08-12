@@ -6,6 +6,7 @@ use English qw( -no_match_vars );
 use Carp;
 use File::Spec::Functions qw( catdir );
 use Readonly;
+use Try::Tiny;
 
 extends qw(npg_qc::autoqc::checks::check);
 with 'npg_tracking::data::bait::find',
