@@ -15,7 +15,7 @@ with 'npg_tracking::data::bait::find',
 
 our $VERSION = '0';
 
-Readonly::Scalar my $PICARD_COMMAND    => q[CalculateHsMetrics];
+Readonly::Scalar my $PICARD_COMMAND    => q[CollectHsMetrics];
 Readonly::Scalar my $MAX_JAVA_HEAP_SIZE => q[3000m];
 Readonly::Scalar my $MINUS_ONE          => -1;
 Readonly::Scalar my $MIN_ON_BAIT_BASES_PERCENTAGE => 20;
@@ -96,7 +96,7 @@ has 'picard_command' => (
 sub _build_picard_command {
     my $self = shift;
     my $command = $self->gatk_cmd .
-      sprintf q[ --java-options "%s" %s VALIDATION_STRINGENCY=SILENT BAIT_INTERVALS=%s TARGET_INTERVALS=%s --REFERENCE_SEQUENCE=%s INPUT=%s OUTPUT=/dev/stdout],
+      sprintf q[ --java-options "-Xmx%s" %s --BAIT_INTERVALS %s --TARGET_INTERVALS %s --REFERENCE_SEQUENCE %s --INPUT %s --OUTPUT /dev/stdout],
         $self->max_java_heap_size,
         $self->picard_module,
         $self->bait_intervals_path,
