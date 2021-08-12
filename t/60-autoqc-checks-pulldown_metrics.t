@@ -69,10 +69,12 @@ my $dir = tempdir( CLEANUP => 1 );
     qc_in => q[t],
     position => 1,
     tag_index => 1,
+    repository => 't/data',
   );
   push @checks, npg_qc::autoqc::checks::pulldown_metrics->new(
     rpt_list => '2:1:1',
     qc_in => q[t],
+    repository => 't/data',
   );
 
   foreach my $pdm (@checks) {
