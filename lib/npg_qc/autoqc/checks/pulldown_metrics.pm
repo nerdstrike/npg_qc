@@ -174,27 +174,23 @@ sub _parse_metrics {
         croak q[File handle is not available, cannot parse picard pulldown metrics];
     }
     my @lines = ();
-    while (my $line = <$fh>) {
-        ## no critic (RequireExtendedFormatting)
-        if ( $line =~ /^#/sm ) { next; }
-        ## use critic
-        chomp $line;
-        if ($line =~ /^\s*$/smx) { next; }
-        push @lines, $line;
+    my $line = '';
+    while ($line !~ /^## METRICS/) {
+        $line = <$fh>;
     }
+    $lines[0] = <$fh>;
+    $lines[1] = <$fh>;
+    chomp(@lines);
+
     close $fh or croak qq[Cannot close pipe in __PACKAGE__ : $ERRNO, $CHILD_ERROR];
 
-    if (scalar @lines != 2) {
-        croak q[Wrong number of result lines, should be two lines];
-    }
     my @keys = split /\t/smx, $lines[0];
     my @values = split /\t/smx, $lines[1], $MINUS_ONE;
     my $num_keys = scalar @keys;
     my $num_values = scalar @values;
     if ($num_keys != $num_values) {
-        croak qq[Mismatch in number of keys and values, $num_keys agains $num_values];
+        croak qq[Mismatch in number of keys and values, $num_keys against $num_values];
     }
-
     my $results = {};
     my $i = 0;
     while ($i < $num_keys) {
