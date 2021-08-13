@@ -174,13 +174,15 @@ sub _parse_metrics {
         croak q[File handle is not available, cannot parse picard pulldown metrics];
     }
     my @lines = ();
-    my $line = '';
-    while ($line !~ /^## METRICS/) {
+    my $line = q{};
+    ## no critic (RequireExtendedFormatting)
+    while ($line !~ /^## METRICS/sm) {
         $line = <$fh>;
     }
+    ## use critic
     $lines[0] = <$fh>;
     $lines[1] = <$fh>;
-    chomp(@lines);
+    chomp @lines;
 
     close $fh or croak qq[Cannot close pipe in __PACKAGE__ : $ERRNO, $CHILD_ERROR];
 
