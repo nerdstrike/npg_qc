@@ -4,7 +4,7 @@ use Moose;
 use namespace::autoclean;
 use English qw( -no_match_vars );
 use Carp;
-use File::Spec::Functions qw( catdir );
+use File::Spec::Functions qw( catdir catfile );
 use Readonly;
 use Try::Tiny;
 
