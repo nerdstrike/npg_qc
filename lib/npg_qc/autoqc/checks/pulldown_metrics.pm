@@ -178,7 +178,7 @@ has 'output_file' => (
 
 sub _build_output_file {
     my $self = shift;
-    return catfile($self->tmp_path, $self->rpt_list.'_gatk_collecthsmetrics.txt');
+    return catfile($self->filename_root, $self->qc_out->[0], $self->rpt_list.'_gatk_collecthsmetrics.txt');
 }
 
 sub _parse_metrics {
