@@ -87,25 +87,21 @@ sub _build_reference {
     return $ref;
 }
 
-has 'picard_command' => (
-    is         => 'ro',
-    isa        => 'Str',
+has 'picard_arguments' => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
     lazy_build => 1,
 );
 
-sub _build_picard_command {
+sub _build_picard_arguments {
     my $self = shift;
-
-    my $command = $self->gatk_cmd .
-      sprintf q[ --java-options "-Xmx%s" %s --BAIT_INTERVALS %s --TARGET_INTERVALS %s --REFERENCE_SEQUENCE %s --INPUT %s --OUTPUT %s],
-        $self->max_java_heap_size,
-        $self->picard_module,
-        $self->bait_intervals_path,
-        $self->target_intervals_path,
-        $self->reference,
-        $self->input_files->[0],
-        $self->output_file;
-    return $command;
+    return [
+        '--BAIT_INTERVALS '.$self->bait_intervals_path,
+        '--TARGET_INTERVALS '.$self->target_intervals_path,
+        '--REFERENCE_SEQUENCE '.$self->reference,
+        '--INPUT '.$self->input_files->[0],
+        '--OUTPUT '.$self->output_file
+    ];
 }
 
 override 'can_run' => sub {
@@ -148,9 +144,16 @@ override 'execute' => sub {
     $self->result->set_info( 'Aligner_version', $self->current_version($self->gatk_cmd) );
     $self->result->bait_path($self->bait_path);
 
-    my $command = $self->picard_command;
-    ## no critic (ProhibitTwoArgOpen InputOutput::RequireBriefOpen)
-    open my $fh, $self->output_file or croak 'Failed to open GATK output file: '.$self->output_file.q{ }.$?;
+    my $exit = system
+        $self->gatk_cmd,
+        q[--java-options "-Xmx].$self->max_java_heap_size.q["],
+        $self->picard_module,
+        @{$self->picard_arguments};
+    if ($exit != 0) {
+        croak 'Failed to run GATK with '.join ', ', $self->picard_module, @{$self->picard_arguments};
+    }
+    ## no critic (InputOutput::RequireBriefOpen Variables::ProhibitPunctuationVars)
+    open my $fh, '<', $self->output_file or croak 'Failed to open GATK output file: '.$self->output_file.q{ }.$?;
     ## use critic
     my $results = $self->_parse_metrics($fh);
     close $fh or croak 'File handle close error';
