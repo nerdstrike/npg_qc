@@ -96,11 +96,11 @@ has 'picard_arguments' => (
 sub _build_picard_arguments {
     my $self = shift;
     return [
-        '--BAIT_INTERVALS '.$self->bait_intervals_path,
-        '--TARGET_INTERVALS '.$self->target_intervals_path,
-        '--REFERENCE_SEQUENCE '.$self->reference,
-        '--INPUT '.$self->input_files->[0],
-        '--OUTPUT '.$self->output_file
+        '--BAIT_INTERVALS='.$self->bait_intervals_path,
+        '--TARGET_INTERVALS='.$self->target_intervals_path,
+        '--REFERENCE_SEQUENCE='.$self->reference,
+        '--INPUT='.$self->input_files->[0],
+        '--OUTPUT='.$self->output_file
     ];
 }
 
@@ -143,10 +143,9 @@ override 'execute' => sub {
     $self->result->set_info( 'Aligner', 'Picard '.$self->picard_module );
     $self->result->set_info( 'Aligner_version', $self->current_version($self->gatk_cmd) );
     $self->result->bait_path($self->bait_path);
-
+    local $ENV{JAVA_TOOL_OPTIONS} = '-Xmx'.$self->max_java_heap_size;
     my $exit = system
         $self->gatk_cmd,
-        q[--java-options "-Xmx].$self->max_java_heap_size.q["],
         $self->picard_module,
         @{$self->picard_arguments};
     if ($exit != 0) {
@@ -199,8 +198,6 @@ sub _parse_metrics {
     $lines[0] = <$fh>;
     $lines[1] = <$fh>;
     chomp @lines;
-
-    close $fh or croak qq[Cannot close pipe in __PACKAGE__ : $ERRNO, $CHILD_ERROR];
 
     my @keys = split /\t/smx, $lines[0];
     my @values = split /\t/smx, $lines[1], $MINUS_ONE;
