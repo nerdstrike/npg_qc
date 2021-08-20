@@ -145,7 +145,7 @@ override 'execute' => sub {
     $self->result->bait_path($self->bait_path);
     my $exit = system join q[ ],
         $self->gatk_cmd,
-        '-Xmx'.$self->max_java_heap_size,
+        q[--java-options "-Xmx].$self->max_java_heap_size.q["],
         $PICARD_METRICS_NAME,
         @{$self->_picard_arguments};
     if ($exit != 0) {
