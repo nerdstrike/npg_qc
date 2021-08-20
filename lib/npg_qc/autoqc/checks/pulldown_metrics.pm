@@ -92,7 +92,7 @@ has '_picard_arguments' => (
     lazy_build => 1,
 );
 
-sub _build_picard_arguments {
+sub _build__picard_arguments {
     my $self = shift;
     return [
         '--VALIDATION_STRINGENCY=SILENT',
