@@ -143,13 +143,17 @@ override 'execute' => sub {
     $self->result->set_info( 'Picard_metrics_name', 'Picard '.$PICARD_METRICS_NAME );
     $self->result->set_info( 'Aligner_version', $self->current_version($self->gatk_cmd) );
     $self->result->bait_path($self->bait_path);
-    my $exit = system join q[ ],
+    my $gatk_command = join q[ ],
         $self->gatk_cmd,
         q[--java-options "-Xmx].$self->max_java_heap_size.q["],
         $PICARD_METRICS_NAME,
         @{$self->_picard_arguments};
+    carp 'Running GATK as: '.$gatk_command;
+    my $exit = system $gatk_command;
     if ($exit != 0) {
-        croak 'Failed to run GATK with '.join ', ', $PICARD_METRICS_NAME, @{$self->_picard_arguments};
+        croak 'GATK failed';
+    } else {
+        carp 'GATK completed without error';
     }
 
     open my $fh, '<', $self->output_file or croak 'Failed to open GATK output file: '.$self->output_file.q{ }.$CHILD_ERROR;
