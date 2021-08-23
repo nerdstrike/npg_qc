@@ -42,9 +42,9 @@ has '+file_type'         => (default => 'cram',);
 has '+aligner'           => (default => 'fasta',);
 
 has 'alignments_in_bam'  => (
-	  is => 'ro',
-	  isa => 'Maybe[Bool]',
-	  lazy_build => 1,
+    is => 'ro',
+    isa => 'Maybe[Bool]',
+    lazy_build => 1,
 );
 sub _build_alignments_in_bam {
     my ($self) = @_;
@@ -65,10 +65,12 @@ has 'reference' => (
 
 sub _build_reference {
     my $self = shift;
-    if (@{$self->refs} > 1) {
+
+    my @refs = $self->refs;
+    if (@refs > 1) {
         croak 'More than one reference supplied. Cannot run pulldown_metrics with ambiguous reference FASTA';
     }
-    my $ref = pop @{$self->refs()};
+    my $ref = pop @refs;
     if (!$ref) {
         croak 'No reference supplied. Cannot interpret CRAM without a reference FASTA file';
     }
@@ -140,8 +142,8 @@ override 'execute' => sub {
         return 1;
     }
 
-    $self->result->set_info( 'Picard_metrics_name', 'Picard '.$PICARD_METRICS_NAME );
-    $self->result->set_info( 'Aligner_version', $self->current_version($self->gatk_cmd) );
+    $self->result->set_info( 'Picard_metrics_name', $PICARD_METRICS_NAME );
+    $self->result->set_info( 'GATK_version', $self->current_version($self->gatk_cmd) );
     $self->result->bait_path($self->bait_path);
     my $gatk_command = join q[ ],
         $self->gatk_cmd,
